@@ -6,17 +6,16 @@ import { auth } from "./routes/auth";
 import { categories } from "./routes/categories";
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors({ credentials: true }));
 app.use(cookieParser());
 dotenv.config();
 
-app.use("/auth", auth);
-app.use("/categories", categories);
+app.use("/api/auth", auth);
+app.use("/api/categories", categories);
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log(
-    `Server is currently running on http://localhost:${process.env.PORT}`
-  );
+app.listen(PORT, () => {
+  console.log(`Server is currently running on http://localhost:${PORT}`);
 });
