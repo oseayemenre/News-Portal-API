@@ -1,5 +1,5 @@
 import express from "express";
-import bcrypt from "bcrypt";
+import bcrypt, { hashSync } from "bcrypt";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 
@@ -98,8 +98,8 @@ export const forgotPassword = async (
   res: express.Response
 ) => {
   try {
-    const { username, newpassword } = req.body;
-    const hashPassword = await bcrypt.hash(newpassword, 10);
+    const { username, password } = req.body;
+    const hashPassword = await bcrypt.hash(password, 10);
 
     await prisma.admins.update({
       where: {
@@ -111,7 +111,7 @@ export const forgotPassword = async (
       },
     });
 
-    return res.json({ message: "Password Succesfully updated" });
+    return res.json({ message: "Password Succesfully updated" }).status(200);
   } catch (e: unknown) {
     if (typeof e === "string") {
       return res.json({ message: e }).status(500);

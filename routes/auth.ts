@@ -11,6 +11,6 @@ const router = express.Router();
 router.post("/register", register);
 router.post("/login", login);
 router.get("/users", users);
-router.patch("/forgot-password/", forgotPassword);
+router.patch("/forgot-password", forgotPassword);
 
 export { router as auth };
