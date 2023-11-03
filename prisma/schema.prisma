@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Admins {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Posts[]
+}
+
+model Category {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  categoryName  String
+  description   String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  posts         Posts[]
+  subCategories SubCategory[]
+
+  @@unique([categoryName, description])
+}
+
+model Comments {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Pages {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  pageName    String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Posts {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  postTitle     String      @unique
+  postDetails   String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  postUrl       String
+  postImage     String
+  adminId       String      @db.ObjectId
+  categoryId    String      @db.ObjectId
+  subCategoryId String      @db.ObjectId
+  category      Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  admins        Admins      @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  subCategory   SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+}
+
+model SubCategory {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  subCategory       String
+  subCatDescription String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  posts             Posts[]
+  categoryId        String   @db.ObjectId
+  category          Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([subCategory, subCatDescription])
+}

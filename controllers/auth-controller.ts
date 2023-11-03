@@ -1,26 +1,28 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
 
-type Tdatabase = {
-  username: string;
-  password: string;
-};
-
-const database: Tdatabase[] = [];
+const prisma = new PrismaClient();
 
 export const register = async (req: express.Request, res: express.Response) => {
   try {
     const { username, password } = req.body;
 
-    const findUser = database.findIndex((users) => users.username === username);
+    const user = await prisma.admins.findUnique({
+      where: {
+        username,
+      },
+    });
 
-    if (findUser === -1) {
+    if (!user) {
       const hashedPassword = await bcrypt.hash(password, 12);
 
-      database.push({
-        username,
-        password: hashedPassword,
+      await prisma.admins.create({
+        data: {
+          username,
+          password: hashedPassword,
+        },
       });
 
       return res.json({ message: "User succesfully created" }).status(200);
@@ -40,16 +42,17 @@ export const login = async (req: express.Request, res: express.Response) => {
   try {
     const { username, password } = req.body;
 
-    const findUser = database.findIndex((users) => users.username === username);
+    const user = await prisma.admins.findUnique({
+      where: {
+        username,
+      },
+    });
 
-    if (findUser === -1) {
+    if (!user) {
       return res.json({ message: "User doesn't exist" }).status(400);
     }
 
-    const checkpassword = await bcrypt.compare(
-      password,
-      database[findUser].password
-    );
+    const checkpassword = await bcrypt.compare(password, user.password);
 
     if (!checkpassword) {
       return res.json({ message: "Invalid credentials" }).status(400);
@@ -66,7 +69,7 @@ export const login = async (req: express.Request, res: express.Response) => {
     return res
       .cookie("token", token, { httpOnly: true })
       .status(200)
-      .json({ message: "User succesfully created" });
+      .json({ message: "User succesfully logged in" });
   } catch (e: unknown) {
     if (typeof e === "string") {
       return res.json({ message: e }).status(500);
@@ -78,7 +81,9 @@ export const login = async (req: express.Request, res: express.Response) => {
 
 export const users = async (req: express.Request, res: express.Response) => {
   try {
-    return res.json({ users: database }).status(200);
+    const users = await prisma.admins.findMany();
+
+    return res.send(users).status(200);
   } catch (e: unknown) {
     if (typeof e === "string") {
       return res.json({ message: e }).status(500);
@@ -94,18 +99,19 @@ export const forgotPassword = async (
 ) => {
   try {
     const { username, newpassword } = req.body;
-
-    const findUser = database.findIndex((users) => users.username === username);
-
-    if (findUser === -1) {
-      return res.json({ message: "User doesn't exist" }).status(400);
-    }
-
     const hashPassword = await bcrypt.hash(newpassword, 10);
 
-    database[findUser].password = hashPassword;
+    await prisma.admins.update({
+      where: {
+        username,
+      },
 
-    return res.json({ user: database[findUser] });
+      data: {
+        password: hashPassword,
+      },
+    });
+
+    return res.json({ message: "Password Succesfully updated" });
   } catch (e: unknown) {
     if (typeof e === "string") {
       return res.json({ message: e }).status(500);
