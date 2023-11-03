@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { auth } from "./routes/auth";
 import { categories } from "./routes/categories";
 import { posts } from "./routes/post";
+import { page } from "./routes/page";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,6 +18,7 @@ dotenv.config();
 app.use("/api/auth", auth);
 app.use("/api/categories", categories);
 app.use("/api/posts", posts);
+app.use("/api/pages", page);
 
 app.listen(PORT, () => {
   console.log(`Server is currently running on http://localhost:${PORT}`);

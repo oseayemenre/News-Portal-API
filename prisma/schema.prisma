@@ -37,7 +37,7 @@ model Comments {
 
 model Pages {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  pageName    String
+  pageName    String   @unique
   description String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
