@@ -18,14 +18,12 @@ model Admins {
 
 model Category {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  categoryName  String
-  description   String
+  categoryName  String        @unique
+  description   String        @unique
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   posts         Posts[]
   subCategories SubCategory[]
-
-  @@unique([categoryName, description])
 }
 
 model Comments {
@@ -63,13 +61,11 @@ model Posts {
 
 model SubCategory {
   id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  subCategory       String
-  subCatDescription String
+  subCategory       String   @unique
+  subCatDescription String   @unique
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   posts             Posts[]
   categoryId        String   @db.ObjectId
   category          Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  @@unique([subCategory, subCatDescription])
 }

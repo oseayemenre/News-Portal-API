@@ -1,17 +1,7 @@
 import express from "express";
+import { PrismaClient } from "@prisma/client";
 
-type Tcategory = {
-  no: number;
-  category: string;
-  description: string;
-  postingDate: Date;
-  updationDate: Date;
-};
-
-const category: Tcategory[] = [];
-let count = 0;
-
-const date = new Date();
+const prisma = new PrismaClient();
 
 export const create_category = async (
   req: express.Request,
@@ -20,20 +10,19 @@ export const create_category = async (
   try {
     const { title, description } = req.body;
 
-    const index = category.findIndex(
-      (categories: Record<string, string | number | Date>) =>
-        categories.category === title
-    );
+    const category = prisma.category.findUnique({
+      where: {
+        categoryName: title,
+      },
+    });
 
-    if (index === -1) {
-      category.push({
-        no: (count += 1),
-        category: title,
-        description,
-        postingDate: date,
-        updationDate: date,
+    if (!category) {
+      await prisma.category.create({
+        data: {
+          categoryName: title,
+          description,
+        },
       });
-
       return res.json({ message: "Category added succesfully" }).status(200);
     }
 
@@ -54,15 +43,21 @@ export const delete_category = async (
   try {
     const { id } = req.params;
 
-    const index = category.findIndex(
-      (categories) => categories.category === id
-    );
+    const category = await prisma.category.findUnique({
+      where: {
+        id,
+      },
+    });
 
-    if (index === -1) {
+    if (!category) {
       return res.json({ message: "Category does't exist" }).status(400);
     }
 
-    category.splice(index, 1);
+    await prisma.category.delete({
+      where: {
+        id,
+      },
+    });
 
     return res.json({ message: "Sucessfully deleted" }).status(200);
   } catch (e: unknown) {
@@ -79,18 +74,30 @@ export const update_category = async (
   res: express.Response
 ) => {
   try {
+    const { id } = req.params;
     const { title, description } = req.body;
 
-    const index = category.findIndex(
-      (categories: Record<string, string | number | Date>) =>
-        categories.category === title
-    );
+    const category = await prisma.category.findUnique({
+      where: {
+        id,
+      },
+    });
 
-    if (index === -1) {
+    if (!category) {
       return res.json({ message: "Category doesn't exist" }).status(400);
     }
 
-    category[index].description = description;
+    await prisma.category.update({
+      where: {
+        categoryName: category.categoryName,
+        description: category.description,
+      },
+
+      data: {
+        categoryName: title,
+        description: description,
+      },
+    });
 
     return res.json({ message: "Category updated succesfully" }).status(200);
   } catch (e: unknown) {
@@ -107,7 +114,7 @@ export const get_categories = async (
   res: express.Response
 ) => {
   try {
-    return res.json({ categories: category }).status(200);
+    return res.send(await prisma.category.findMany()).status(200);
   } catch (e: unknown) {
     if (typeof e === "string") {
       return res.json({ message: e }).status(500);
@@ -124,15 +131,17 @@ export const get_category = async (
   try {
     const { id } = req.params;
 
-    const index = category.findIndex(
-      (categories) => categories.category === id
-    );
+    const category = await prisma.category.findUnique({
+      where: {
+        id,
+      },
+    });
 
-    if (index === -1) {
-      return res.json({ message: "Category does't exist" }).status(400);
+    if (!category) {
+      return res.json({ message: "Category doesn't exist" }).status(400);
     }
 
-    return res.json({ category: category[index] });
+    return res.send(category).status(200);
   } catch (e: unknown) {
     if (typeof e === "string") {
       return res.json({ message: e }).status(500);
