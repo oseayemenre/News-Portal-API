@@ -33,6 +33,8 @@ model Comments {
   comment   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  postId    String   @db.ObjectId
+  post      Posts    @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model Pages {
@@ -53,6 +55,7 @@ model Posts {
   adminId       String      @db.ObjectId
   categoryId    String      @db.ObjectId
   subCategoryId String      @db.ObjectId
+  comments      Comments[]
   category      Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   admins        Admins      @relation(fields: [adminId], references: [id], onDelete: Cascade)
   subCategory   SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
