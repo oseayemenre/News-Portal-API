@@ -19,7 +19,7 @@ model Admins {
 model Category {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   categoryName  String        @unique
-  description   String        @unique
+  description   String
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   posts         Posts[]
@@ -62,7 +62,7 @@ model Posts {
 model SubCategory {
   id                String   @id @default(auto()) @map("_id") @db.ObjectId
   subCategory       String   @unique
-  subCatDescription String   @unique
+  subCatDescription String
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   posts             Posts[]
