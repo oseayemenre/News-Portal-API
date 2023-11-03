@@ -11,7 +11,6 @@ export const create_post = async (
     const {
       postTitle,
       postDetails,
-      postUrl,
       postImage,
       categoryId,
       adminId,
@@ -29,7 +28,6 @@ export const create_post = async (
         data: {
           postTitle,
           postDetails,
-          postUrl,
           postImage,
           category: { connect: { id: categoryId } },
           admins: { connect: { id: adminId } },
