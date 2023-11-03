@@ -1,5 +1,5 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -10,7 +10,7 @@ export const create_category = async (
   try {
     const { title, description } = req.body;
 
-    const category = prisma.category.findUnique({
+    const category = await prisma.category.findUnique({
       where: {
         categoryName: title,
       },
@@ -23,16 +23,20 @@ export const create_category = async (
           description,
         },
       });
-      return res.json({ message: "Category added succesfully" }).status(200);
+      return res.status(200).json({ message: "Category added succesfully" });
     }
 
-    return res.json({ message: "Category already exists" }).status(400);
+    return res.status(400).json({ message: "Category already exists" });
   } catch (e: unknown) {
-    if (typeof e === "string") {
-      return res.json({ message: e }).status(500);
+    console.error("Error:", e);
+
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      return res.status(400).json({ message: "Validation error" });
     }
 
-    return res.json(e);
+    if (typeof e === "string") {
+      return res.status(500).json({ message: "Internal server error" });
+    }
   }
 };
 
@@ -50,7 +54,7 @@ export const delete_category = async (
     });
 
     if (!category) {
-      return res.json({ message: "Category does't exist" }).status(400);
+      return res.status(400).json({ message: "Category does't exist" });
     }
 
     await prisma.category.delete({
@@ -61,11 +65,15 @@ export const delete_category = async (
 
     return res.json({ message: "Sucessfully deleted" }).status(200);
   } catch (e: unknown) {
-    if (typeof e === "string") {
-      return res.json({ message: e }).status(500);
+    console.error("Error:", e);
+
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      return res.status(400).json({ message: "Validation error" });
     }
 
-    return res.json(e);
+    if (typeof e === "string") {
+      return res.status(500).json({ message: "Internal server error" });
+    }
   }
 };
 
@@ -84,7 +92,7 @@ export const update_category = async (
     });
 
     if (!category) {
-      return res.json({ message: "Category doesn't exist" }).status(400);
+      return res.status(200).json({ message: "Category doesn't exist" });
     }
 
     await prisma.category.update({
@@ -99,13 +107,17 @@ export const update_category = async (
       },
     });
 
-    return res.json({ message: "Category updated succesfully" }).status(200);
+    return res.status(200).json({ message: "Category updated succesfully" });
   } catch (e: unknown) {
-    if (typeof e === "string") {
-      return res.json({ message: e }).status(500);
+    console.error("Error:", e);
+
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      return res.status(400).json({ message: "Validation error" });
     }
 
-    return res.json(e);
+    if (typeof e === "string") {
+      return res.status(500).json({ message: "Internal server error" });
+    }
   }
 };
 
@@ -114,13 +126,18 @@ export const get_categories = async (
   res: express.Response
 ) => {
   try {
-    return res.send(await prisma.category.findMany()).status(200);
+    const categories = await prisma.category.findMany();
+    return res.status(200).json({ categories: categories });
   } catch (e: unknown) {
-    if (typeof e === "string") {
-      return res.json({ message: e }).status(500);
+    console.error("Error:", e);
+
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      return res.status(400).json({ message: "Validation error" });
     }
 
-    return res.json(e);
+    if (typeof e === "string") {
+      return res.status(500).json({ message: "Internal server error" });
+    }
   }
 };
 
@@ -138,15 +155,19 @@ export const get_category = async (
     });
 
     if (!category) {
-      return res.json({ message: "Category doesn't exist" }).status(400);
+      return res.status(400).json({ message: "Category doesn't exist" });
     }
 
-    return res.send(category).status(200);
+    return res.status(200).json({ categories: category });
   } catch (e: unknown) {
-    if (typeof e === "string") {
-      return res.json({ message: e }).status(500);
+    console.error("Error:", e);
+
+    if (e instanceof Prisma.PrismaClientValidationError) {
+      return res.status(400).json({ message: "Validation error" });
     }
 
-    return res.json(e);
+    if (typeof e === "string") {
+      return res.status(500).json({ message: "Internal server error" });
+    }
   }
 };
