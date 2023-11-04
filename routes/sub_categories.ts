@@ -15,4 +15,4 @@ router.patch("/patch/:id", update_sub_category);
 router.get("/", get_sub_categories);
 router.get("/:id", get_sub_category);
 
-export { router as categories };
+export { router as sub_categories };
